@@ -1,4 +1,6 @@
-import type { MetaFunction } from "@remix-run/cloudflare";
+import type { HeadersFunction, MetaFunction, LoaderFunction } from "@remix-run/cloudflare";
+import { data } from "@remix-run/cloudflare";
+import { useLoaderData } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
   return [
@@ -6,10 +8,31 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "Welcome to Remix!" },
   ];
 };
+export const headers: HeadersFunction = () => ({
+  "Cache-Control": "public, max-age=300",
+  "X-PTK":"PTK"
+});
+
+export const loader: LoaderFunction = async () => {
+  const now = new Date();
+  return data(
+    { now },
+    {
+      headers: {
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=60",
+        "X-PTK": "PTK",
+      },
+    }
+  );
+};
 
 export default function Index() {
+  const { now } = useLoaderData<typeof loader>() as { now: Date };
+
+  console.log(now);
   return (
     <div className="flex h-screen items-center justify-center">
+      <p>{now.toISOString()}</p>
       <div className="flex flex-col items-center gap-16">
         <header className="flex flex-col items-center gap-9">
           <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
